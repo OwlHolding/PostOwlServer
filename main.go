@@ -9,10 +9,11 @@ import (
 func main() {
 	config := LoadConfigFromEnv("POSTOWLCONFIG")
 
-	InitBot(config, SendMessageWithKeyboard)
+	InitBot(config, StateMachine)
 	InitRedis(config)
 	InitDatabase(config)
 	InitApi(config)
+	InitStateMachine(config)
 
 	log.Print("Server started")
 
