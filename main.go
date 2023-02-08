@@ -14,6 +14,7 @@ func main() {
 	InitDatabase(config)
 	InitApi(config)
 	InitStateMachine(config)
+	InitScheduler(config)
 
 	log.Print("Server started")
 
