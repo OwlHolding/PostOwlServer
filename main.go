@@ -10,6 +10,7 @@ func main() {
 	config := LoadConfigFromEnv("POSTOWLCONFIG")
 
 	InitBot(config, SendMessageWithKeyboard)
+	InitRedis(config)
 
 	log.Print("Server started")
 
