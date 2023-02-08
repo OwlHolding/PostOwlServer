@@ -58,14 +58,21 @@ func SendMessage(chatID int64, text string) {
 }
 
 func SendMessageWithKeyboard(chatID int64, text string) {
+	message := tgbotapi.NewMessage(chatID, text)
 	keyboard := tgbotapi.ReplyKeyboardMarkup{
 		Keyboard: [][]tgbotapi.KeyboardButton{
 			tgbotapi.NewKeyboardButtonRow(
-				tgbotapi.NewKeyboardButton("\xF0\x9F\x91\x8D"),
-				tgbotapi.NewKeyboardButton("\xF0\x9F\x91\x8E"))},
+				tgbotapi.NewKeyboardButton("👍"),
+				tgbotapi.NewKeyboardButton("👎"))},
 		ResizeKeyboard: true, OneTimeKeyboard: true,
 	}
+	message.ReplyMarkup = keyboard
+	BotAPI.Send(message)
+}
+
+func SendMessageRemoveKeyboard(chatID int64, text string) {
 	message := tgbotapi.NewMessage(chatID, text)
+	keyboard := tgbotapi.ReplyKeyboardRemove{RemoveKeyboard: true}
 	message.ReplyMarkup = keyboard
 	BotAPI.Send(message)
 }
