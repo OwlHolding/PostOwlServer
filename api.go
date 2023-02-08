@@ -27,8 +27,8 @@ func ApiRegUser(id int64, location int16) {
 	}
 	defer resp.Body.Close()
 
-	if resp.StatusCode != 201 && resp.StatusCode != 208 {
-		panic(fmt.Errorf("ml error: %d", resp.StatusCode))
+	if resp.StatusCode != 200 && resp.StatusCode != 201 && resp.StatusCode != 208 {
+		panic(fmt.Errorf("ml server error: %d", resp.StatusCode))
 	}
 }
 
@@ -53,7 +53,7 @@ func ApiRegChannel(id int64, location int16, channel string) []string {
 		return make([]string, 0)
 	}
 
-	if resp.StatusCode != 201 && resp.StatusCode != 208 {
+	if resp.StatusCode != 200 && resp.StatusCode != 201 && resp.StatusCode != 208 {
 		panic(fmt.Errorf("ml server error: %d", resp.StatusCode))
 	}
 
@@ -100,7 +100,7 @@ func ApiTrainChannel(
 	}
 	defer resp.Body.Close()
 
-	if resp.StatusCode != 201 && resp.StatusCode != 202 {
+	if resp.StatusCode != 200 && resp.StatusCode != 201 && resp.StatusCode != 202 {
 		panic(fmt.Errorf("ml server error: %d", resp.StatusCode))
 	}
 }
