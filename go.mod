@@ -13,4 +13,5 @@ require (
 	github.com/klauspost/compress v1.15.15 // indirect
 	github.com/redis/go-redis/v9 v9.0.2 // indirect
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
+	github.com/valyala/fastjson v1.6.4 // indirect
 )
