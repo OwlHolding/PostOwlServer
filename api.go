@@ -49,7 +49,7 @@ func ApiRegChannel(id int64, location int16, channel string) []string {
 	}
 	defer resp.Body.Close()
 
-	if resp.Status == "Channel Not Exists" {
+	if resp.StatusCode == 400 {
 		return make([]string, 0)
 	}
 
