@@ -11,6 +11,7 @@ func main() {
 
 	InitBot(config, SendMessageWithKeyboard)
 	InitRedis(config)
+	InitDatabase(config)
 
 	log.Print("Server started")
 
