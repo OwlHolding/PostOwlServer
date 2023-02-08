@@ -35,7 +35,7 @@ func InitDatabase(config ServerConfig) {
 
 func (user *User) Create() {
 	_, err := DatabaseClient.Exec(
-		"INSERT postowl.users(id, channels, time, location) VALUES(?, ?, ?, ?)",
+		"INSERT postowl.users(id, channels, location, time) VALUES(?, ?, ?, ?)",
 		user.ID, user.Channels, user.Location, user.Time)
 	if err != nil {
 		log.Fatal(err)
