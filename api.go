@@ -3,10 +3,8 @@ package main
 import (
 	"bytes"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"io"
-	"log"
 	"net/http"
 
 	"github.com/valyala/fastjson"
@@ -32,20 +30,12 @@ func ApiRegUser(id int64, location int16) {
 	}
 }
 
-type ApiRegChannelRequest struct {
-	Channel string `json:"channel"`
-}
-
 func ApiRegChannel(id int64, location int16, channel string) []string {
-	req := MlServers[location] + "/regchannel/" + fmt.Sprint(id)
-	reqdata, err := json.Marshal(ApiRegChannelRequest{Channel: channel})
-	if err != nil {
-		log.Fatal(err)
-	}
+	req := MlServers[location] + "/regchannel/" + fmt.Sprint(id) + "/" + fmt.Sprint(channel)
 
-	resp, err := http.Post(req, "application/json", bytes.NewBuffer(reqdata))
+	resp, err := http.Post(req, "", nil)
 	if err != nil {
-		panic(err)
+		panic(fmt.Errorf("apiregchannel error: %s", err.Error()))
 	}
 	defer resp.Body.Close()
 
@@ -59,13 +49,13 @@ func ApiRegChannel(id int64, location int16, channel string) []string {
 
 	byte_body, err := io.ReadAll(resp.Body)
 	if err != nil {
-		panic(errors.New("can't read body of response"))
+		panic(fmt.Errorf("apiregchannel error: %s", err.Error()))
 	}
 
 	var parser fastjson.Parser
 	body, err := parser.Parse(string(byte_body))
 	if err != nil {
-		panic(err)
+		panic(fmt.Errorf("apiregchannel error: %s", err.Error()))
 	}
 
 	rawposts := body.GetArray("posts")
@@ -79,50 +69,46 @@ func ApiRegChannel(id int64, location int16, channel string) []string {
 }
 
 type ApiTrainChannelRequest struct {
-	Posts   []string `json:"posts"`
-	Labels  []int8   `json:"labels"`
-	Channel string   `json:"channel"`
+	Posts  []string `json:"posts"`
+	Labels []int8   `json:"labels"`
 }
 
 func ApiTrainChannel(
 	id int64, location int16, channel string, posts []string, labels []int8) {
 
-	req := MlServers[location] + "/train/" + fmt.Sprint(id)
+	req := MlServers[location] + "/train/" + fmt.Sprint(id) + "/" + fmt.Sprint(channel)
 	reqdata, err := json.Marshal(
-		ApiTrainChannelRequest{Posts: posts, Labels: labels, Channel: channel})
+		ApiTrainChannelRequest{Posts: posts, Labels: labels})
 	if err != nil {
-		log.Fatal(err)
+		panic(fmt.Errorf("apitrainchannel error: %s", err.Error()))
 	}
 
 	resp, err := http.Post(req, "application/json", bytes.NewBuffer(reqdata))
 	if err != nil {
-		panic(err)
+		panic(fmt.Errorf("apitrainchannel error: %s", err.Error()))
 	}
 	defer resp.Body.Close()
 
-	if resp.StatusCode != 200 && resp.StatusCode != 201 && resp.StatusCode != 202 {
+	if resp.StatusCode != 200 && resp.StatusCode != 202 {
 		panic(fmt.Errorf("ml server error: %d", resp.StatusCode))
 	}
 }
 
 type ApiPredictReq struct {
-	Channel string `json:"channel"`
-	Time    int16  `json:"time"`
-	Count   int16  `json:"count"`
+	Time int16 `json:"time"`
 }
 
-func ApiPredict(
-	id int64, location int16, channel string, time int16, count int16) []string {
+func ApiPredict(id int64, location int16, channel string, time int16) []string {
 
-	req := MlServers[location] + "/predict/" + fmt.Sprint(id)
-	reqdata, err := json.Marshal(ApiPredictReq{Channel: channel, Time: time, Count: count})
+	req := MlServers[location] + "/predict/" + fmt.Sprint(id) + "/" + fmt.Sprint(channel)
+	reqdata, err := json.Marshal(ApiPredictReq{Time: time})
 	if err != nil {
-		log.Fatal(err)
+		panic(fmt.Errorf("apipredict error: %s", err.Error()))
 	}
 
 	resp, err := http.Post(req, "application/json", bytes.NewBuffer(reqdata))
 	if err != nil {
-		panic(err)
+		panic(fmt.Errorf("apipredict error: %s", err.Error()))
 	}
 	defer resp.Body.Close()
 
@@ -132,13 +118,13 @@ func ApiPredict(
 
 	byte_body, err := io.ReadAll(resp.Body)
 	if err != nil {
-		panic(errors.New("can't read body of response"))
+		panic(fmt.Errorf("apipredict error: %s", err.Error()))
 	}
 
 	var parser fastjson.Parser
 	body, err := parser.Parse(string(byte_body))
 	if err != nil {
-		panic(err)
+		panic(fmt.Errorf("apipredict error: %s", err.Error()))
 	}
 
 	rawposts := body.GetArray("posts")
