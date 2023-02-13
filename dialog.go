@@ -95,12 +95,14 @@ func StateMachine(chatID int64, text string) {
 	}
 
 	if text == "/info" {
-		SendMessage(chatID, "Каналы: "+strings.ReplaceAll(user.Channels, "&", " "))
-		if user.Time == -1 {
-			SendMessage(chatID, "Время не установлено")
-		} else {
-			SendMessage(chatID, "Время: "+fmt.Sprint(user.Time/60)+":"+fmt.Sprint(user.Time%60))
+		channels := strings.ReplaceAll(user.Channels, "&", " ")
+
+		time := "не установлено"
+		if user.Time != -1 {
+			time = fmt.Sprint(user.Time/60) + ":" + fmt.Sprint(user.Time%60)
 		}
+
+		SendMessage(chatID, fmt.Sprintf(MessageInfo, channels, time))
 		return
 	}
 
