@@ -113,6 +113,14 @@ func StateMachine(chatID int64, text string) {
 		return
 	}
 
+	if text == "/cancel" {
+		userstate.State = StateIdle
+		userstate.Data = &DialogEmpty{}
+		userstate.Set()
+		SendMessageRemoveKeyboard(chatID, MessageCancel)
+		return
+	}
+
 	if userstate.State == StateWaitAddChannel {
 		if strings.Contains(user.Channels, "&"+text+"&") {
 			SendMessage(chatID, MessageChannelAlreadyAdded)
