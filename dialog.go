@@ -14,6 +14,7 @@ const (
 	StateRateCycle      = 2
 	StateWaitDelChannel = 3
 	StateWaitChangeTime = 4
+	StateAddDiffPost    = 5
 )
 
 type DialogEmpty struct{}
@@ -144,6 +145,27 @@ func StateMachine(chatID int64, text string) {
 			data.Labels = append(data.Labels, int8(label))
 			data.Iter++
 			if len(data.Labels) == len(data.Posts) {
+				sum := 0
+				for _, label := range data.Labels {
+					sum += int(label)
+				}
+				if sum == 0 {
+					SendMessage(chatID, MessageRateCycleAllNegative)
+					data.Labels = append(data.Labels, 1)
+					userstate.Data = data
+					userstate.State = StateAddDiffPost
+					userstate.Set()
+					return
+				}
+				if sum == len(data.Labels) {
+					SendMessage(chatID, MessageRateCycleAllPositive)
+					data.Labels = append(data.Labels, 0)
+					userstate.Data = data
+					userstate.State = StateAddDiffPost
+					userstate.Set()
+					return
+				}
+
 				SendMessage(chatID, MessageRateCycleWait)
 				ApiTrainChannel(
 					chatID, user.Location, data.Channel, data.Posts,
@@ -206,6 +228,27 @@ func StateMachine(chatID int64, text string) {
 		userstate.State = StateIdle
 		userstate.Set()
 		SendMessage(chatID, MessageChangeTimeOK)
+		return
+	}
+
+	if userstate.State == StateAddDiffPost {
+		userstate.Data = &DialogPostRate{}
+		userstate.Get()
+		data := userstate.Data.(*DialogPostRate)
+		data.Posts = append(data.Posts, text)
+		SendMessage(chatID, MessageRateCycleWait)
+		ApiTrainChannel(
+			chatID, user.Location, data.Channel, data.Posts,
+			data.Labels)
+		userstate.State = StateIdle
+		userstate.Data = &DialogEmpty{}
+		userstate.Set()
+		user.Channels += data.Channel + "&"
+		user.Update()
+		SendMessageRemoveKeyboard(chatID, MessageRateCycleEnd)
+		userstate.State = StateIdle
+		userstate.Data = &DialogEmpty{}
+		userstate.Set()
 		return
 	}
 
