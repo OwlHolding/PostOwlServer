@@ -1,28 +1,21 @@
 package main
 
 import (
-	"strings"
 	"time"
 )
 
 func InitScheduler(config ServerConfig) {
-	go Scheduler()
+	go func() {
+		time.Sleep(time.Second * time.Duration((60 - time.Now().Second())))
+		go SchedulerTick()
+	}()
 }
 
-func Scheduler() {
+func SchedulerTick() {
 	for {
-		ids := DatabaseForScheduler(int16(time.Now().Hour()*60 + time.Now().Minute()))
-
-		for _, id := range ids {
-			user := User{ID: id}
-			user.Get()
-			channels := strings.Split(user.Channels, "&")
-			channels = channels[1 : len(channels)-1]
-
-			for _, channel := range channels {
-				posts := ApiPredict(user.ID, user.Location, channel, user.Time)
-				SendMessage(user.ID, posts[0])
-			}
+		users := DatabaseForScheduler(int16(time.Now().Hour()*60 + time.Now().Minute()))
+		for _, user := range users {
+			go SendPosts(user)
 		}
 		time.Sleep(time.Minute)
 	}

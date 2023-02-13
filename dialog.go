@@ -16,8 +16,6 @@ const (
 	StateWaitChangeTime = 4
 )
 
-var AdminChatID int64
-
 type DialogEmpty struct{}
 
 func (dialog *DialogEmpty) Encode() []byte     { return make([]byte, 0) }
@@ -44,6 +42,8 @@ func (dialog *DialogPostRate) Decode(bytedata []byte) {
 		log.Fatal(err)
 	}
 }
+
+var AdminChatID int64
 
 func InitStateMachine(config ServerConfig) {
 	AdminChatID = config.AdminChatID
@@ -210,4 +210,30 @@ func StateMachine(chatID int64, text string) {
 	}
 
 	SendMessage(chatID, MessageUnknownCommand)
+}
+
+func SendPosts(chatID int64) {
+	defer func() {
+		err := recover()
+		if err != nil {
+			log.Print(err)
+		}
+	}()
+
+	user := User{ID: chatID}
+	user.Get()
+	channels := strings.Split(user.Channels, "&")
+	channels = channels[1 : len(channels)-1]
+
+	avalposts := false
+	for _, channel := range channels {
+		posts := ApiPredict(user.ID, user.Location, channel, user.Time)
+		for _, post := range posts {
+			avalposts = true
+			SendMessage(user.ID, post+"\n\n<b>"+channel+"</b>")
+		}
+	}
+	if !avalposts {
+		SendMessage(user.ID, MessageNoNewPosts)
+	}
 }
