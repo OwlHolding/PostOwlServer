@@ -69,6 +69,8 @@ func StateMachine(chatID int64, text string) {
 	userstate.Get()
 
 	if text == "/start" {
+		userstate := UserState{ID: chatID, State: StateIdle, Data: &DialogEmpty{}}
+		userstate.Set()
 		SendMessage(chatID, MessageHello)
 		return
 	}
@@ -102,6 +104,8 @@ func StateMachine(chatID int64, text string) {
 			time = fmt.Sprint(user.Time/60) + ":" + fmt.Sprint(user.Time%60)
 		}
 
+		userstate := UserState{ID: chatID, State: StateIdle, Data: &DialogEmpty{}}
+		userstate.Set()
 		SendMessage(chatID, fmt.Sprintf(MessageInfo, channels, time))
 		return
 	}
@@ -109,6 +113,8 @@ func StateMachine(chatID int64, text string) {
 	if text == "/disable" {
 		user.Time = -1
 		user.Update()
+		userstate := UserState{ID: chatID, State: StateIdle, Data: &DialogEmpty{}}
+		userstate.Set()
 		SendMessage(chatID, MessageUserDisabled)
 		return
 	}
