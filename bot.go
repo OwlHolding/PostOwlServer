@@ -37,6 +37,13 @@ func InitBot(config ServerConfig, handler TgBotUpdateHandler) {
 }
 
 func ProcessRequest(ctx *fasthttp.RequestCtx) {
+	defer func() {
+		err := recover()
+		if err != nil {
+			log.Printf("telegram sended shit: %s", err)
+		}
+	}()
+
 	if string(ctx.Path()) != WebhookPath {
 		ctx.Error("", fasthttp.StatusForbidden)
 		return
