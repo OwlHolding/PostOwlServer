@@ -20,7 +20,7 @@ func Scheduler() {
 			channels = channels[1 : len(channels)-1]
 
 			for _, channel := range channels {
-				posts := ApiPredict(user.ID, user.Location, channel, user.Time, 1)
+				posts := ApiPredict(user.ID, user.Location, channel, user.Time)
 				SendMessage(user.ID, posts[0])
 			}
 		}

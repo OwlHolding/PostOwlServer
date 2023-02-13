@@ -60,9 +60,13 @@ func ApiRegChannel(id int64, location int16, channel string) []string {
 
 	rawposts := body.GetArray("posts")
 	var posts []string
+	var post string
 
-	for _, post := range rawposts {
-		posts = append(posts, string(post.GetStringBytes()))
+	for _, rawpost := range rawposts {
+		post = string(rawpost.GetStringBytes())
+		if post != "" {
+			posts = append(posts, post)
+		}
 	}
 
 	return posts
