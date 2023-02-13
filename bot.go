@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"log"
 
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
@@ -51,9 +52,11 @@ func ProcessRequest(ctx *fasthttp.RequestCtx) {
 }
 
 func SendMessage(chatID int64, text string) {
-	_, err := BotAPI.Send(tgbotapi.NewMessage(chatID, text))
+	message := tgbotapi.NewMessage(chatID, text)
+	message.ParseMode = "HTML"
+	_, err := BotAPI.Send(message)
 	if err != nil {
-		panic(err)
+		panic(fmt.Errorf("botapi error: %s", err.Error()))
 	}
 }
 
@@ -67,12 +70,20 @@ func SendMessageWithKeyboard(chatID int64, text string) {
 		ResizeKeyboard: true, OneTimeKeyboard: true,
 	}
 	message.ReplyMarkup = keyboard
-	BotAPI.Send(message)
+	message.ParseMode = "HTML"
+	_, err := BotAPI.Send(message)
+	if err != nil {
+		panic(fmt.Errorf("botapi error: %s", err.Error()))
+	}
 }
 
 func SendMessageRemoveKeyboard(chatID int64, text string) {
 	message := tgbotapi.NewMessage(chatID, text)
 	keyboard := tgbotapi.ReplyKeyboardRemove{RemoveKeyboard: true}
 	message.ReplyMarkup = keyboard
-	BotAPI.Send(message)
+	message.ParseMode = "HTML"
+	_, err := BotAPI.Send(message)
+	if err != nil {
+		panic(fmt.Errorf("botapi error: %s", err.Error()))
+	}
 }
