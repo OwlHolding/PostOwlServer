@@ -122,6 +122,9 @@ func StateMachine(chatID int64, text string) {
 	}
 
 	if userstate.State == StateWaitAddChannel {
+		text = strings.ReplaceAll(text, "https://t.me/", "")
+		text = strings.ReplaceAll(text, "@", "")
+
 		if strings.Contains(user.Channels, "&"+text+"&") {
 			SendMessage(chatID, MessageChannelAlreadyAdded)
 			return
@@ -198,6 +201,9 @@ func StateMachine(chatID int64, text string) {
 	}
 
 	if userstate.State == StateWaitDelChannel {
+		text = strings.ReplaceAll(text, "https://t.me/", "")
+		text = strings.ReplaceAll(text, "@", "")
+
 		if !strings.Contains(user.Channels, "&"+text+"&") {
 			SendMessage(chatID, MessageChannelNotListed)
 			return
