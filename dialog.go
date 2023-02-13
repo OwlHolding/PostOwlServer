@@ -274,8 +274,10 @@ func SendPosts(chatID int64) {
 	for _, channel := range channels {
 		posts := ApiPredict(user.ID, user.Location, channel, user.Time)
 		for _, post := range posts {
-			avalposts = true
-			SendMessage(user.ID, post+"\n\n<b>"+channel+"</b>")
+			if post != "" {
+				avalposts = true
+				SendMessage(user.ID, post+"\n\n<b>"+channel+"</b>")
+			}
 		}
 	}
 	if !avalposts {
