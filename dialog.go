@@ -101,7 +101,15 @@ func StateMachine(chatID int64, text string) {
 
 		time := "не установлено"
 		if user.Time != -1 {
-			time = fmt.Sprint(user.Time/60) + ":" + fmt.Sprint(user.Time%60)
+			hours := fmt.Sprint(user.Time / 60)
+			minutes := fmt.Sprint(user.Time % 60)
+			if len(hours) == 1 {
+				hours = "0" + hours
+			}
+			if len(minutes) == 1 {
+				minutes = "0" + minutes
+			}
+			time = hours + ":" + minutes
 		}
 
 		userstate := UserState{ID: chatID, State: StateIdle, Data: &DialogEmpty{}}
