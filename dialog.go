@@ -318,7 +318,8 @@ func SendPosts(chatID int64) {
 		for _, post := range posts {
 			if post != "" {
 				avalposts = true
-				SendMessage(user.ID, post+"\n<b>"+channel+"</b>")
+				SendMessage(user.ID,
+					post+"\n"+fmt.Sprintf(`<a href="t.me/%s">%s</a>`, channel, channel))
 			}
 		}
 	}
