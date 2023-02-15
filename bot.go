@@ -61,6 +61,7 @@ func ProcessRequest(ctx *fasthttp.RequestCtx) {
 func SendMessage(chatID int64, text string) {
 	message := tgbotapi.NewMessage(chatID, text)
 	message.ParseMode = "HTML"
+	message.DisableWebPagePreview = true
 	_, err := BotAPI.Send(message)
 	if err != nil {
 		panic(fmt.Errorf("botapi error: %s", err.Error()))
