@@ -9,6 +9,15 @@ import (
 	fasthttp "github.com/valyala/fasthttp"
 )
 
+type ReplyKeyboardMarkup struct {
+	Keyboard              [][]tgbotapi.KeyboardButton `json:"keyboard"`
+	ResizeKeyboard        bool                        `json:"resize_keyboard,omitempty"`
+	OneTimeKeyboard       bool                        `json:"one_time_keyboard,omitempty"`
+	InputFieldPlaceholder string                      `json:"input_field_placeholder,omitempty"`
+	Selective             bool                        `json:"selective,omitempty"`
+	IsPersistent          bool                        `json:"is_persistent,omitempty"`
+}
+
 type TgBotUpdateHandler func(int64, string)
 
 var BotAPI *tgbotapi.BotAPI
@@ -40,7 +49,7 @@ func ProcessRequest(ctx *fasthttp.RequestCtx) {
 	defer func() {
 		err := recover()
 		if err != nil {
-			log.Printf("telegram sended shit: %s", err)
+			log.Printf("telegram sended shit! %s", err)
 		}
 	}()
 
@@ -70,14 +79,14 @@ func SendMessage(chatID int64, text string) {
 
 func SendMessageWithKeyboard(chatID int64, text string) {
 	message := tgbotapi.NewMessage(chatID, text)
-	keyboard := tgbotapi.ReplyKeyboardMarkup{
+	keyboard := ReplyKeyboardMarkup{
 		Keyboard: [][]tgbotapi.KeyboardButton{
 			tgbotapi.NewKeyboardButtonRow(
 				tgbotapi.NewKeyboardButton("👍"),
 				tgbotapi.NewKeyboardButton("👎"))},
-		ResizeKeyboard: true, OneTimeKeyboard: true,
-	}
+		ResizeKeyboard: true, IsPersistent: true}
 	message.ReplyMarkup = keyboard
+
 	message.ParseMode = "HTML"
 	_, err := BotAPI.Send(message)
 	if err != nil {
