@@ -44,6 +44,19 @@ func (dialog *DialogPostRate) Decode(bytedata []byte) {
 	}
 }
 
+func FormatTime(hours int16, minutes int16) string {
+	time := ""
+	if hours < 10 {
+		time += "0"
+	}
+	time += fmt.Sprint(hours) + ":"
+	if minutes < 10 {
+		time += "0"
+	}
+	time += fmt.Sprint(minutes)
+	return time
+}
+
 var AdminChatID int64
 
 func InitStateMachine(config ServerConfig) {
@@ -71,7 +84,7 @@ func StateMachine(chatID int64, text string) {
 	if text == "/start" {
 		userstate := UserState{ID: chatID, State: StateIdle, Data: &DialogEmpty{}}
 		userstate.Set()
-		SendMessage(chatID, MessageHello)
+		SendMessageRemoveKeyboard(chatID, MessageHello)
 		return
 	}
 
@@ -97,24 +110,24 @@ func StateMachine(chatID int64, text string) {
 	}
 
 	if text == "/info" {
-		channels := strings.ReplaceAll(user.Channels, "&", " ")
+		channelslist := strings.Split(user.Channels, "&")
+		channelslist = channelslist[1 : len(channelslist)-1]
+		channels := ""
+		for _, channel := range channelslist {
+			channels += "\t<code>" + channel + "</code>\n"
+		}
+		if len(channels) > 2 {
+			channels = channels[:len(channels)-1]
+		}
 
 		time := "не установлено"
 		if user.Time != -1 {
-			hours := fmt.Sprint(user.Time / 60)
-			minutes := fmt.Sprint(user.Time % 60)
-			if len(hours) == 1 {
-				hours = "0" + hours
-			}
-			if len(minutes) == 1 {
-				minutes = "0" + minutes
-			}
-			time = hours + ":" + minutes
+			time = FormatTime(user.Time/60, user.Time%60)
 		}
 
 		userstate := UserState{ID: chatID, State: StateIdle, Data: &DialogEmpty{}}
 		userstate.Set()
-		SendMessage(chatID, fmt.Sprintf(MessageInfo, channels, time))
+		SendMessage(chatID, fmt.Sprintf(MessageInfo, time, channels))
 		return
 	}
 
@@ -193,7 +206,7 @@ func StateMachine(chatID int64, text string) {
 					return
 				}
 
-				SendMessage(chatID, MessageRateCycleWait)
+				SendMessageRemoveKeyboard(chatID, MessageRateCycleWait)
 				ApiTrainChannel(
 					chatID, user.Location, data.Channel, data.Posts,
 					data.Labels)
@@ -202,7 +215,7 @@ func StateMachine(chatID int64, text string) {
 				userstate.Set()
 				user.Channels += data.Channel + "&"
 				user.Update()
-				SendMessageRemoveKeyboard(chatID, MessageRateCycleEnd)
+				SendMessage(chatID, MessageRateCycleEnd)
 			} else {
 				userstate.Data = data
 				userstate.Set()
@@ -226,7 +239,7 @@ func StateMachine(chatID int64, text string) {
 		user.Update()
 		userstate.State = StateIdle
 		userstate.Set()
-		SendMessage(chatID, MessageDelChannelOK)
+		SendMessage(chatID, fmt.Sprintf(MessageDelChannelOK, text))
 		return
 	}
 
@@ -257,7 +270,8 @@ func StateMachine(chatID int64, text string) {
 		user.Update()
 		userstate.State = StateIdle
 		userstate.Set()
-		SendMessage(chatID, MessageChangeTimeOK)
+		SendMessage(chatID,
+			fmt.Sprintf(MessageChangeTimeOK, FormatTime(int16(hours), int16(minutes))))
 		return
 	}
 
