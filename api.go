@@ -73,16 +73,18 @@ func ApiRegChannel(id int64, location int16, channel string) []string {
 }
 
 type ApiTrainChannelRequest struct {
-	Posts  []string `json:"posts"`
-	Labels []int8   `json:"labels"`
+	Posts    []string `json:"posts"`
+	Labels   []int8   `json:"labels"`
+	Finetune bool     `json:"finetune"`
 }
 
 func ApiTrainChannel(
-	id int64, location int16, channel string, posts []string, labels []int8) {
+	id int64, location int16, channel string, posts []string, labels []int8,
+	finetune bool) {
 
 	req := MlServers[location] + "/train/" + fmt.Sprint(id) + "/" + fmt.Sprint(channel)
 	reqdata, err := json.Marshal(
-		ApiTrainChannelRequest{Posts: posts, Labels: labels})
+		ApiTrainChannelRequest{Posts: posts, Labels: labels, Finetune: finetune})
 	if err != nil {
 		panic(fmt.Errorf("apitrainchannel error: %s", err.Error()))
 	}
@@ -102,7 +104,7 @@ type ApiPredictReq struct {
 	Time int16 `json:"time"`
 }
 
-func ApiPredict(id int64, location int16, channel string, time int16) []string {
+func ApiPredict(id int64, location int16, channel string, time int16) ([]string, string) {
 
 	req := MlServers[location] + "/predict/" + fmt.Sprint(id) + "/" + fmt.Sprint(channel)
 	reqdata, err := json.Marshal(ApiPredictReq{Time: time})
@@ -138,5 +140,7 @@ func ApiPredict(id int64, location int16, channel string, time int16) []string {
 		posts = append(posts, string(post.GetStringBytes()))
 	}
 
-	return posts
+	markup := string(body.Get("markup").GetStringBytes())
+
+	return posts, markup
 }
