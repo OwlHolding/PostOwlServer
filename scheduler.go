@@ -4,7 +4,13 @@ import (
 	"time"
 )
 
-func InitScheduler(config ServerConfig) {
+type SchedulerHander func(int16)
+
+var SchedulerTickHandler SchedulerHander
+
+func InitScheduler(config ServerConfig, handler SchedulerHander) {
+	SchedulerTickHandler = handler
+
 	go func() {
 		time.Sleep(time.Second * time.Duration((60 - time.Now().Second())))
 		go SchedulerTick()
@@ -13,10 +19,7 @@ func InitScheduler(config ServerConfig) {
 
 func SchedulerTick() {
 	for {
-		users := DatabaseForScheduler(int16(time.Now().Hour()*60 + time.Now().Minute()))
-		for _, user := range users {
-			go SendPosts(user)
-		}
+		SchedulerTickHandler(int16(time.Now().Hour()*60 + time.Now().Minute()))
 		time.Sleep(time.Minute)
 	}
 }
