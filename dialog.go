@@ -209,7 +209,7 @@ func StateMachine(chatID int64, text string) {
 				SendMessageRemoveKeyboard(chatID, MessageRateCycleWait)
 				ApiTrainChannel(
 					chatID, user.Location, data.Channel, data.Posts,
-					data.Labels)
+					data.Labels, false)
 				userstate.State = StateIdle
 				userstate.Data = &DialogEmpty{}
 				userstate.Set()
@@ -283,7 +283,7 @@ func StateMachine(chatID int64, text string) {
 		SendMessage(chatID, MessageRateCycleWait)
 		ApiTrainChannel(
 			chatID, user.Location, data.Channel, data.Posts,
-			data.Labels)
+			data.Labels, false)
 		userstate.State = StateIdle
 		userstate.Data = &DialogEmpty{}
 		userstate.Set()
@@ -299,7 +299,7 @@ func StateMachine(chatID int64, text string) {
 	SendMessage(chatID, MessageUnknownCommand)
 }
 
-func SendPosts(chatID int64) {
+func SendPosts(time int16) {
 	defer func() {
 		err := recover()
 		if err != nil {
@@ -307,23 +307,26 @@ func SendPosts(chatID int64) {
 		}
 	}()
 
-	user := User{ID: chatID}
-	user.Get()
-	channels := strings.Split(user.Channels, "&")
-	channels = channels[1 : len(channels)-1]
+	users := DatabaseForScheduler(time)
+	for _, chatID := range users {
+		user := User{ID: chatID}
+		user.Get()
+		channels := strings.Split(user.Channels, "&")
+		channels = channels[1 : len(channels)-1]
 
-	avalposts := false
-	for _, channel := range channels {
-		posts := ApiPredict(user.ID, user.Location, channel, user.Time)
-		for _, post := range posts {
-			if post != "" {
-				avalposts = true
-				SendMessage(user.ID,
-					post+"\n"+fmt.Sprintf(`<a href="t.me/%s">%s</a>`, channel, channel))
+		avalposts := false
+		for _, channel := range channels {
+			posts, _ := ApiPredict(user.ID, user.Location, channel, user.Time)
+			for _, post := range posts {
+				if post != "" {
+					avalposts = true
+					SendMessage(user.ID,
+						post+"\n"+fmt.Sprintf(`<a href="t.me/%s">%s</a>`, channel, channel))
+				}
 			}
 		}
-	}
-	if !avalposts {
-		SendMessage(user.ID, MessageNoNewPosts)
+		if !avalposts {
+			SendMessage(user.ID, MessageNoNewPosts)
+		}
 	}
 }
