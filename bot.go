@@ -49,7 +49,7 @@ func ProcessRequest(ctx *fasthttp.RequestCtx) {
 	defer func() {
 		err := recover()
 		if err != nil {
-			log.Printf("telegram sended shit! %s", err)
+			log.Printf("telegram sent an empty request %s", err)
 		}
 	}()
 
