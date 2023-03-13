@@ -15,6 +15,7 @@ const (
 	StateWaitDelChannel = 3
 	StateWaitChangeTime = 4
 	StateAddDiffPost    = 5
+	StateAddMarkCycle   = 6
 )
 
 type DialogEmpty struct{}
@@ -38,6 +39,26 @@ func (dialog *DialogPostRate) Encode() []byte {
 }
 
 func (dialog *DialogPostRate) Decode(bytedata []byte) {
+	err := json.Unmarshal(bytedata, dialog)
+	if err != nil {
+		log.Fatal(err)
+	}
+}
+
+type DialogAddMark struct {
+	Posts    []string
+	Channels []string
+}
+
+func (dialog *DialogAddMark) Encode() []byte {
+	bytedata, err := json.Marshal(dialog)
+	if err != nil {
+		log.Fatal(err)
+	}
+	return bytedata
+}
+
+func (dialog *DialogAddMark) Decode(bytedata []byte) {
 	err := json.Unmarshal(bytedata, dialog)
 	if err != nil {
 		log.Fatal(err)
@@ -141,8 +162,7 @@ func StateMachine(chatID int64, text string) {
 	}
 
 	if text == "/cancel" {
-		userstate.State = StateIdle
-		userstate.Data = &DialogEmpty{}
+		userstate := UserState{ID: chatID, State: StateIdle, Data: &DialogEmpty{}}
 		userstate.Set()
 		SendMessageRemoveKeyboard(chatID, MessageCancel)
 		return
@@ -178,11 +198,11 @@ func StateMachine(chatID int64, text string) {
 		data := userstate.Data.(*DialogPostRate)
 
 		if text == "👍" || text == "👎" {
-			label := 1
+			var label int8 = 1
 			if text == "👎" {
 				label = 0
 			}
-			data.Labels = append(data.Labels, int8(label))
+			data.Labels = append(data.Labels, label)
 			data.Iter++
 			if len(data.Labels) == len(data.Posts) {
 				sum := 0
@@ -296,6 +316,42 @@ func StateMachine(chatID int64, text string) {
 		return
 	}
 
+	if userstate.State == StateAddMarkCycle {
+		userstate.Data = &DialogAddMark{}
+		userstate.Get()
+		data := userstate.Data.(*DialogAddMark)
+
+		if text == "👍" || text == "👎" {
+			var label int8 = 1
+			if text == "👎" {
+				label = 0
+			}
+
+			go ApiTrainChannel(user.ID, user.Location,
+				data.Channels[len(data.Channels)-1],
+				data.Posts[len(data.Posts)-1:len(data.Posts)], []int8{int8(label)}, true)
+
+			data.Channels = data.Channels[:len(data.Channels)-1]
+			data.Posts = data.Posts[:len(data.Posts)-1]
+
+			if len(data.Posts) > 0 {
+				SendMessageWithKeyboard(chatID,
+					data.Posts[len(data.Posts)-1]+"\n"+fmt.Sprintf(`<a href="t.me/%s">%s</a>`,
+						data.Channels[len(data.Channels)-1], data.Channels[len(data.Channels)-1]))
+				userstate.Data = data
+			} else {
+				SendMessageRemoveKeyboard(chatID, MessageMarkCycleEnd)
+				userstate.State = StateIdle
+				userstate.Data = &DialogEmpty{}
+			}
+			userstate.Set()
+
+		} else {
+			SendMessage(chatID, MessageRateCycleFormat)
+		}
+		return
+	}
+
 	SendMessage(chatID, MessageUnknownCommand)
 }
 
@@ -314,19 +370,31 @@ func SendPosts(time int16) {
 		channels := strings.Split(user.Channels, "&")
 		channels = channels[1 : len(channels)-1]
 
+		userstate := UserState{ID: chatID, State: StateAddMarkCycle}
+		data := DialogAddMark{}
+
 		avalposts := false
 		for _, channel := range channels {
-			posts, _ := ApiPredict(user.ID, user.Location, channel, user.Time)
+			posts, markup := ApiPredict(user.ID, user.Location, channel, user.Time)
 			for _, post := range posts {
 				if post != "" {
 					avalposts = true
-					SendMessage(user.ID,
+					SendMessage(chatID,
 						post+"\n"+fmt.Sprintf(`<a href="t.me/%s">%s</a>`, channel, channel))
 				}
 			}
+			data.Posts = append(data.Posts, markup)
+			data.Channels = append(data.Channels, channel)
 		}
+
 		if !avalposts {
 			SendMessage(user.ID, MessageNoNewPosts)
+		} else {
+			SendMessage(chatID, MessageMarkPlease)
+			SendMessageWithKeyboard(chatID,
+				data.Posts[len(data.Posts)-1]+"\n"+fmt.Sprintf(`<a href="t.me/%s">%s</a>`,
+					data.Channels[len(data.Channels)-1], data.Channels[len(data.Channels)-1]))
+			userstate.Set()
 		}
 	}
 }
