@@ -79,9 +79,11 @@ func FormatTime(hours int16, minutes int16) string {
 }
 
 var AdminChatID int64
+var ChansPerUser int
 
 func InitStateMachine(config ServerConfig) {
 	AdminChatID = config.AdminChatID
+	ChansPerUser = config.ChansPerUser
 }
 
 func StateMachine(chatID int64, text string) {
@@ -174,6 +176,11 @@ func StateMachine(chatID int64, text string) {
 
 		if strings.Contains(user.Channels, "&"+text+"&") {
 			SendMessage(chatID, MessageChannelAlreadyAdded)
+			return
+		}
+
+		if strings.Count(user.Channels, "&")-1 >= ChansPerUser {
+			SendMessage(chatID, fmt.Sprintf(MessageChannelOverflow, ChansPerUser))
 			return
 		}
 
@@ -383,8 +390,10 @@ func SendPosts(time int16) {
 						post+"\n"+fmt.Sprintf(`<a href="t.me/%s">%s</a>`, channel, channel))
 				}
 			}
-			data.Posts = append(data.Posts, markup)
-			data.Channels = append(data.Channels, channel)
+			if markup != "" {
+				data.Posts = append(data.Posts, markup)
+				data.Channels = append(data.Channels, channel)
+			}
 		}
 
 		if !avalposts {
