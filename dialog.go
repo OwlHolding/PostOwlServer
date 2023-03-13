@@ -80,10 +80,12 @@ func FormatTime(hours int16, minutes int16) string {
 
 var AdminChatID int64
 var ChansPerUser int
+var LocationsCount int16
 
 func InitStateMachine(config ServerConfig) {
 	AdminChatID = config.AdminChatID
 	ChansPerUser = config.ChansPerUser
+	LocationsCount = int16(len(config.MlServers))
 }
 
 func StateMachine(chatID int64, text string) {
@@ -97,6 +99,18 @@ func StateMachine(chatID int64, text string) {
 
 	user := User{ID: chatID, Channels: "&", Time: -1}
 	if !user.Get() {
+		var min int64 = 9223372036854775807
+		var minloc int16 = 0
+		var iter int16 = 0
+		for iter < LocationsCount {
+			entry := DatabaseCountLocation(iter)
+			if entry < min {
+				min = entry
+				minloc = iter
+			}
+			iter++
+		}
+		user.Location = minloc
 		user.Create()
 		ApiRegUser(chatID, user.Location)
 	}
