@@ -31,7 +31,7 @@ func ApiRegUser(id int64, location int16) {
 }
 
 func ApiRegChannel(id int64, location int16, channel string) []string {
-	req := MlServers[location] + "/regchannel/" + fmt.Sprint(id) + "/" + fmt.Sprint(channel)
+	req := MlServers[location] + "/regchannel/" + fmt.Sprint(id) + "/" + channel
 
 	resp, err := http.Post(req, "", nil)
 	if err != nil {
@@ -82,7 +82,7 @@ func ApiTrainChannel(
 	id int64, location int16, channel string, posts []string, labels []int8,
 	finetune bool) {
 
-	req := MlServers[location] + "/train/" + fmt.Sprint(id) + "/" + fmt.Sprint(channel)
+	req := MlServers[location] + "/train/" + fmt.Sprint(id) + "/" + channel
 	reqdata, err := json.Marshal(
 		ApiTrainChannelRequest{Posts: posts, Labels: labels, Finetune: finetune})
 	if err != nil {
@@ -106,7 +106,7 @@ type ApiPredictReq struct {
 
 func ApiPredict(id int64, location int16, channel string, time int16) ([]string, string) {
 
-	req := MlServers[location] + "/predict/" + fmt.Sprint(id) + "/" + fmt.Sprint(channel)
+	req := MlServers[location] + "/predict/" + fmt.Sprint(id) + "/" + channel
 	reqdata, err := json.Marshal(ApiPredictReq{Time: time})
 	if err != nil {
 		panic(fmt.Errorf("apipredict error: %s", err.Error()))
