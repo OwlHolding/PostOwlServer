@@ -1,0 +1,16 @@
+{
+    "Token": "token",
+    "Url": "https://url-of-your-server",
+    "Port": "port-of-your-server",
+    "MaxBotConns": 10,
+    "ChansPerUser": 10,
+    "CertFile": "use certgen.sh",
+    "KeyFile": "use certgen.sh",
+    "RedisUrl": "localhost:port",
+    "MlServers": ["https://url-of-ml-server"],
+    "SqlUser": "root",
+    "SqlPass": "toor",
+    "MaxSqlConns": 10,
+    "MaxSqlIdleConns": 5,
+    "AdminChatID": 0
+}
