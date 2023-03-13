@@ -1,16 +1,16 @@
 {
-    "Token": "token",
+    "Token": "token-of-your-bot",
     "Url": "https://url-of-your-server",
     "Port": "8443",
-    "MaxBotConns": 10,
+    "MaxBotConns": 40,
     "ChansPerUser": 10,
     "CertFile": "certs/cert.pem",
     "KeyFile": "certs/key.pem",
     "RedisUrl": "localhost:6379",
-    "MlServers": ["url-of-ml-server"],
+    "MlServers": ["https://url-of-ml-server"],
     "SqlUser": "root",
     "SqlPass": "pass",
-    "MaxSqlConns": 10,
-    "MaxSqlIdleConns": 5,
+    "MaxSqlConns": 40,
+    "MaxSqlIdleConns": 10,
     "AdminChatID": 0
 }
