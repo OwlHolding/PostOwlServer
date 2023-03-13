@@ -394,6 +394,7 @@ func SendPosts(time int16) {
 			SendMessageWithKeyboard(chatID,
 				data.Posts[len(data.Posts)-1]+"\n"+fmt.Sprintf(`<a href="t.me/%s">%s</a>`,
 					data.Channels[len(data.Channels)-1], data.Channels[len(data.Channels)-1]))
+			userstate.Data = &data
 			userstate.Set()
 		}
 	}
