@@ -88,3 +88,18 @@ func DatabaseForScheduler(time int16) []int64 {
 
 	return ids
 }
+
+func DatabaseCountLocation(location int16) int64 {
+	result := DatabaseClient.QueryRow(
+		"SELECT COUNT(*) FROM postowl.users WHERE location=?", location)
+	if result.Err() != nil {
+		log.Fatal(result.Err())
+	}
+
+	var count int64
+	err := result.Scan(&count)
+	if err != nil {
+		log.Fatal(err)
+	}
+	return count
+}
