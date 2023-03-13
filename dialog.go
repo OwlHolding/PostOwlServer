@@ -248,9 +248,9 @@ func StateMachine(chatID int64, text string) {
 				userstate.Set()
 				SendMessageWithKeyboard(chatID, data.Posts[data.Iter])
 			}
-			return
+		} else {
+			SendMessage(chatID, MessageRateCycleFormat)
 		}
-		SendMessage(chatID, MessageRateCycleFormat)
 		return
 	}
 
