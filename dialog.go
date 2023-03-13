@@ -348,7 +348,7 @@ func StateMachine(chatID int64, text string) {
 				label = 0
 			}
 
-			go ApiTrainChannel(user.ID, user.Location,
+			go ApiTrainChannelSafe(user.ID, user.Location,
 				data.Channels[len(data.Channels)-1],
 				data.Posts[len(data.Posts)-1:len(data.Posts)], []int8{int8(label)}, true)
 

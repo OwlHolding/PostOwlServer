@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 
 	"github.com/valyala/fastjson"
@@ -98,6 +99,20 @@ func ApiTrainChannel(
 	if resp.StatusCode != 200 && resp.StatusCode != 202 {
 		panic(fmt.Errorf("ml server error: %d", resp.StatusCode))
 	}
+}
+
+func ApiTrainChannelSafe(
+	id int64, location int16, channel string, posts []string, labels []int8,
+	finetune bool) {
+
+	defer func() {
+		err := recover()
+		if err != nil {
+			log.Print(err)
+		}
+	}()
+
+	ApiTrainChannel(id, location, channel, posts, labels, finetune)
 }
 
 type ApiPredictReq struct {
