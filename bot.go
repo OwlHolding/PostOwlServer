@@ -88,6 +88,7 @@ func SendMessageWithKeyboard(chatID int64, text string) {
 	message.ReplyMarkup = keyboard
 
 	message.ParseMode = "HTML"
+	message.DisableWebPagePreview = true
 	_, err := BotAPI.Send(message)
 	if err != nil {
 		panic(fmt.Errorf("botapi error: %s", err.Error()))
@@ -99,6 +100,7 @@ func SendMessageRemoveKeyboard(chatID int64, text string) {
 	keyboard := tgbotapi.ReplyKeyboardRemove{RemoveKeyboard: true}
 	message.ReplyMarkup = keyboard
 	message.ParseMode = "HTML"
+	message.DisableWebPagePreview = true
 	_, err := BotAPI.Send(message)
 	if err != nil {
 		panic(fmt.Errorf("botapi error: %s", err.Error()))
