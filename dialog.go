@@ -88,12 +88,16 @@ func InitStateMachine(config ServerConfig) {
 	LocationsCount = int16(len(config.MlServers))
 }
 
-func StateMachine(chatID int64, text string) {
+func StateMachine(chatID int64, text string, username string) {
 	defer func() {
 		err := recover()
 		if err != nil {
 			log.Print(err)
 			SendMessage(chatID, MessageError)
+			if AdminChatID != 0 {
+				SendMessage(AdminChatID,
+					fmt.Sprintf(`Error: "%s"; Username: @%s`, err, username))
+			}
 		}
 	}()
 
@@ -113,6 +117,9 @@ func StateMachine(chatID int64, text string) {
 		user.Location = minloc
 		user.Create()
 		ApiRegUser(chatID, user.Location)
+		if AdminChatID != 0 {
+			SendMessage(AdminChatID, fmt.Sprintf("New user registered: @%s", username))
+		}
 	}
 
 	userstate := UserState{ID: chatID, Data: &DialogEmpty{}}

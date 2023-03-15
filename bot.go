@@ -18,7 +18,7 @@ type ReplyKeyboardMarkup struct {
 	IsPersistent          bool                        `json:"is_persistent,omitempty"`
 }
 
-type TgBotUpdateHandler func(int64, string)
+type TgBotUpdateHandler func(int64, string, string)
 
 var BotAPI *tgbotapi.BotAPI
 var WebhookPath string
@@ -64,7 +64,8 @@ func ProcessRequest(ctx *fasthttp.RequestCtx) {
 		ctx.Error("", fasthttp.StatusBadRequest)
 		return
 	}
-	BotUpdateHandler(update.Message.From.ID, update.Message.Text)
+	BotUpdateHandler(update.Message.From.ID,
+		update.Message.Text, update.Message.Chat.UserName)
 }
 
 func SendMessage(chatID int64, text string) {
