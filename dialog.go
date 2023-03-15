@@ -388,6 +388,10 @@ func SendPosts(time int16) {
 		err := recover()
 		if err != nil {
 			log.Print(err)
+			if AdminChatID != 0 {
+				SendMessage(AdminChatID,
+					fmt.Sprintf(`Scheduler error: "%s"`, err))
+			}
 		}
 	}()
 

@@ -49,7 +49,7 @@ func ProcessRequest(ctx *fasthttp.RequestCtx) {
 	defer func() {
 		err := recover()
 		if err != nil {
-			log.Printf("telegram sent an empty request %s", err)
+			log.Printf("telegram sent bad request %s", err)
 		}
 	}()
 
@@ -64,7 +64,7 @@ func ProcessRequest(ctx *fasthttp.RequestCtx) {
 		ctx.Error("", fasthttp.StatusBadRequest)
 		return
 	}
-	BotUpdateHandler(update.Message.From.ID,
+	go BotUpdateHandler(update.Message.From.ID,
 		update.Message.Text, update.Message.Chat.UserName)
 }
 

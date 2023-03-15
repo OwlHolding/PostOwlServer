@@ -7,6 +7,7 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"time"
 
 	"github.com/valyala/fastjson"
 )
@@ -34,7 +35,8 @@ func ApiRegUser(id int64, location int16) {
 func ApiRegChannel(id int64, location int16, channel string) []string {
 	req := MlServers[location] + "/regchannel/" + fmt.Sprint(id) + "/" + channel
 
-	resp, err := http.Post(req, "", nil)
+	client := http.Client{Timeout: time.Minute}
+	resp, err := client.Post(req, "", nil)
 	if err != nil {
 		panic(fmt.Errorf("apiregchannel error: %s", err.Error()))
 	}
@@ -90,7 +92,8 @@ func ApiTrainChannel(
 		panic(fmt.Errorf("apitrainchannel error: %s", err.Error()))
 	}
 
-	resp, err := http.Post(req, "application/json", bytes.NewBuffer(reqdata))
+	client := http.Client{Timeout: 5 * time.Minute}
+	resp, err := client.Post(req, "application/json", bytes.NewBuffer(reqdata))
 	if err != nil {
 		panic(fmt.Errorf("apitrainchannel error: %s", err.Error()))
 	}
@@ -119,15 +122,17 @@ type ApiPredictReq struct {
 	Time int16 `json:"time"`
 }
 
-func ApiPredict(id int64, location int16, channel string, time int16) ([]string, string) {
+func ApiPredict(id int64, location int16, channel string,
+	sendtime int16) ([]string, string) {
 
 	req := MlServers[location] + "/predict/" + fmt.Sprint(id) + "/" + channel
-	reqdata, err := json.Marshal(ApiPredictReq{Time: time})
+	reqdata, err := json.Marshal(ApiPredictReq{Time: sendtime})
 	if err != nil {
 		panic(fmt.Errorf("apipredict error: %s", err.Error()))
 	}
 
-	resp, err := http.Post(req, "application/json", bytes.NewBuffer(reqdata))
+	client := http.Client{Timeout: 10 * time.Minute}
+	resp, err := client.Post(req, "application/json", bytes.NewBuffer(reqdata))
 	if err != nil {
 		panic(fmt.Errorf("apipredict error: %s", err.Error()))
 	}
