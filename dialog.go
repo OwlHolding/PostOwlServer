@@ -395,6 +395,9 @@ func SendPosts(time int16) {
 	for _, chatID := range users {
 		user := User{ID: chatID}
 		user.Get()
+		if user.Time == 0 {
+			user.Time = 1
+		}
 		channels := strings.Split(user.Channels, "&")
 		channels = channels[1 : len(channels)-1]
 
