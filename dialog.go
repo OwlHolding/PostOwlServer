@@ -297,6 +297,9 @@ func StateMachine(chatID int64, text string, username string) {
 				user.Channels += data.Channel + "&"
 				user.Update()
 				SendMessage(chatID, MessageRateCycleEnd)
+				if user.Time == -1 {
+					SendMessage(chatID, MessageNotForget)
+				}
 			} else {
 				userstate.Data = data
 				userstate.Set()
