@@ -81,11 +81,15 @@ func FormatTime(hours int16, minutes int16) string {
 var AdminChatID int64
 var ChansPerUser int
 var LocationsCount int16
+var BanList []int64
+var WhiteList []int64
 
 func InitStateMachine(config ServerConfig) {
 	AdminChatID = config.AdminChatID
 	ChansPerUser = config.ChansPerUser
 	LocationsCount = int16(len(config.MlServers))
+	BanList = config.BanList
+	WhiteList = config.WhiteList
 }
 
 func StateMachine(chatID int64, text string, username string) {
@@ -100,6 +104,27 @@ func StateMachine(chatID int64, text string, username string) {
 			}
 		}
 	}()
+
+	if len(WhiteList) > 0 {
+		ban := true
+		for _, id := range WhiteList {
+			if id == chatID {
+				ban = false
+				break
+			}
+		}
+		if ban {
+			SendMessage(chatID, MessageBanned)
+			return
+		}
+	} else {
+		for _, id := range BanList {
+			if id == chatID {
+				SendMessage(chatID, MessageBanned)
+				return
+			}
+		}
+	}
 
 	user := User{ID: chatID, Channels: "&", Time: -1}
 	if !user.Get() {
@@ -118,7 +143,7 @@ func StateMachine(chatID int64, text string, username string) {
 		ApiRegUser(chatID, user.Location)
 		user.Create()
 		if AdminChatID != 0 {
-			SendMessage(AdminChatID, fmt.Sprintf("New user registered: @%s", username))
+			SendMessage(AdminChatID, fmt.Sprintf("New user registered: @%s %d", username, chatID))
 		}
 	}
 

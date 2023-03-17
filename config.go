@@ -21,6 +21,8 @@ type ServerConfig struct {
 	MaxSqlConns     int
 	MaxSqlIdleConns int
 	AdminChatID     int64
+	BanList         []int64
+	WhiteList       []int64
 }
 
 func GenerateConfig(path string) {
