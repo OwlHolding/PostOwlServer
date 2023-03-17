@@ -78,14 +78,14 @@ func FormatTime(hours int16, minutes int16) string {
 	return time
 }
 
-var AdminChatID int64
+var AdminChatIDs []int64
 var ChansPerUser int
 var LocationsCount int16
 var BanList []int64
 var WhiteList []int64
 
 func InitStateMachine(config ServerConfig) {
-	AdminChatID = config.AdminChatID
+	AdminChatIDs = config.AdminChatIDs
 	ChansPerUser = config.ChansPerUser
 	LocationsCount = int16(len(config.MlServers))
 	BanList = config.BanList
@@ -98,9 +98,13 @@ func StateMachine(chatID int64, text string, username string) {
 		if err != nil {
 			log.Print(err)
 			SendMessage(chatID, MessageError)
-			if AdminChatID != 0 {
-				SendMessage(AdminChatID,
-					fmt.Sprintf(`Error: "%s"; Username: @%s`, err, username))
+			if len(AdminChatIDs) != 0 {
+				for _, AdminChatID := range AdminChatIDs {
+					if AdminChatID != 0 {
+						SendMessage(AdminChatID,
+							fmt.Sprintf(`Error: "%s"; Username: @%s`, err, username))
+					}
+				}
 			}
 		}
 	}()
@@ -142,8 +146,12 @@ func StateMachine(chatID int64, text string, username string) {
 		user.Location = minloc
 		ApiRegUser(chatID, user.Location)
 		user.Create()
-		if AdminChatID != 0 {
-			SendMessage(AdminChatID, fmt.Sprintf("New user registered: @%s %d", username, chatID))
+		if len(AdminChatIDs) != 0 {
+			for _, AdminChatID := range AdminChatIDs {
+				if AdminChatID != 0 {
+					SendMessage(AdminChatID, fmt.Sprintf("New user registered: @%s %d", username, chatID))
+				}
+			}
 		}
 	}
 
@@ -413,9 +421,13 @@ func SendPosts(time int16) {
 		err := recover()
 		if err != nil {
 			log.Print(err)
-			if AdminChatID != 0 {
-				SendMessage(AdminChatID,
-					fmt.Sprintf(`Scheduler error: "%s"`, err))
+			if len(AdminChatIDs) != 0 {
+				for _, AdminChatID := range AdminChatIDs {
+					if AdminChatID != 0 {
+						SendMessage(AdminChatID,
+							fmt.Sprintf(`Scheduler error: "%s"`, err))
+					}
+				}
 			}
 		}
 	}()

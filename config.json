@@ -12,5 +12,7 @@
     "SqlPass": "pass",
     "MaxSqlConns": 40,
     "MaxSqlIdleConns": 10,
-    "AdminChatID": 0
+    "AdminChatIDs": 0,
+    "BanList": [],
+    "WhiteList": []
 }

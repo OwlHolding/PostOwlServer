@@ -20,7 +20,7 @@ type ServerConfig struct {
 	SqlPass         string
 	MaxSqlConns     int
 	MaxSqlIdleConns int
-	AdminChatID     int64
+	AdminChatIDs    []int64
 	BanList         []int64
 	WhiteList       []int64
 }
