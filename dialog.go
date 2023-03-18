@@ -78,6 +78,28 @@ func FormatTime(hours int16, minutes int16) string {
 	return time
 }
 
+func CheckBan(chatID int64) bool {
+	if len(WhiteList) > 0 {
+		ban := true
+		for _, id := range WhiteList {
+			if id == chatID {
+				ban = false
+				break
+			}
+		}
+		if ban {
+			return true
+		}
+	} else {
+		for _, id := range BanList {
+			if id == chatID {
+				return true
+			}
+		}
+	}
+	return false
+}
+
 var AdminChatIDs []int64
 var ChansPerUser int
 var LocationsCount int16
@@ -109,25 +131,9 @@ func StateMachine(chatID int64, text string, username string) {
 		}
 	}()
 
-	if len(WhiteList) > 0 {
-		ban := true
-		for _, id := range WhiteList {
-			if id == chatID {
-				ban = false
-				break
-			}
-		}
-		if ban {
-			SendMessage(chatID, MessageBanned)
-			return
-		}
-	} else {
-		for _, id := range BanList {
-			if id == chatID {
-				SendMessage(chatID, MessageBanned)
-				return
-			}
-		}
+	if CheckBan(chatID) {
+		SendMessage(chatID, MessageBanned)
+		return
 	}
 
 	user := User{ID: chatID, Channels: "&", Time: -1}
@@ -437,9 +443,13 @@ func SendPosts(time int16) {
 
 	users := DatabaseForScheduler(time)
 	for _, chatID := range users {
+		if CheckBan(chatID) {
+			continue
+		}
+
 		user := User{ID: chatID}
 		user.Get()
-		if user.Time == 0 {
+		if user.Time == 0 { // do not touch
 			user.Time = 1
 		}
 		channels := strings.Split(user.Channels, "&")
