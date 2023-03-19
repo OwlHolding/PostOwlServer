@@ -16,7 +16,7 @@ const (
 	MessageChannelNotListed     = "Такого канал нет в списке рассылки"
 	MessageDelChannelOK         = "Канал <code>%s</code> успешно удален"
 	MessageChangeTime           = "Пришли мне время рассылки, которое тебе удобно. Например, 17:00"
-	MessageTimeInvalidFormat    = "Пришли время в формате мм:сс, пожалуйста"
+	MessageTimeInvalidFormat    = "Пришли время в формате часы:минуты, пожалуйста"
 	MessageChangeTimeOK         = "Спасибо! Теперь я буду прислать рассылку в %s"
 	MessageUserDisabled         = "Рассылка успешно отключена. Для повторной активации заново установи время с помощью команды /changetime"
 	MessageInfo                 = "Время рассылки: %s\nСписок рассылки:\n%s"
