@@ -21,7 +21,8 @@ func InitApi(config ServerConfig) {
 func ApiRegUser(id int64, location int16) {
 	req := MlServers[location] + "/register/" + fmt.Sprint(id)
 
-	resp, err := http.Post(req, "", nil)
+	client := http.Client{Timeout: time.Minute}
+	resp, err := client.Post(req, "", nil)
 	if err != nil {
 		panic(err)
 	}

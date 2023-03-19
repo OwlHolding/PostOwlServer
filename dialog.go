@@ -150,8 +150,8 @@ func StateMachine(chatID int64, text string, username string) {
 			iter++
 		}
 		user.Location = minloc
-		ApiRegUser(chatID, user.Location)
 		user.Create()
+		ApiRegUser(chatID, user.Location)
 		if len(AdminChatIDs) != 0 {
 			for _, AdminChatID := range AdminChatIDs {
 				if AdminChatID != 0 {
