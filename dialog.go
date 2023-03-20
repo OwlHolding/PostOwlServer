@@ -15,7 +15,6 @@ const (
 	StateWaitDelChannel = 3
 	StateWaitChangeTime = 4
 	StateAddDiffPost    = 5
-	StateAddMarkCycle   = 6
 )
 
 type DialogEmpty struct{}
@@ -395,42 +394,6 @@ func StateMachine(chatID int64, text string, username string) {
 		return
 	}
 
-	if userstate.State == StateAddMarkCycle {
-		userstate.Data = &DialogAddMark{}
-		userstate.Get()
-		data := userstate.Data.(*DialogAddMark)
-
-		if text == "👍" || text == "👎" {
-			var label int8 = 1
-			if text == "👎" {
-				label = 0
-			}
-
-			go ApiTrainChannelSafe(user.ID, user.Location,
-				data.Channels[len(data.Channels)-1],
-				data.Posts[len(data.Posts)-1:len(data.Posts)], []int8{int8(label)}, true)
-
-			data.Channels = data.Channels[:len(data.Channels)-1]
-			data.Posts = data.Posts[:len(data.Posts)-1]
-
-			if len(data.Posts) > 0 {
-				SendMessageWithKeyboard(chatID,
-					data.Posts[len(data.Posts)-1]+"\n"+fmt.Sprintf(`<a href="t.me/%s">%s</a>`,
-						data.Channels[len(data.Channels)-1], data.Channels[len(data.Channels)-1]))
-				userstate.Data = data
-			} else {
-				SendMessageRemoveKeyboard(chatID, MessageMarkCycleEnd)
-				userstate.State = StateIdle
-				userstate.Data = &DialogEmpty{}
-			}
-			userstate.Set()
-
-		} else {
-			SendMessage(chatID, MessageRateCycleFormat)
-		}
-		return
-	}
-
 	SendMessage(chatID, MessageUnknownCommand)
 }
 
@@ -464,34 +427,44 @@ func SendPosts(time int16) {
 		channels := strings.Split(user.Channels, "&")
 		channels = channels[1 : len(channels)-1]
 
-		userstate := UserState{ID: chatID, State: StateAddMarkCycle}
-		data := DialogAddMark{}
-
 		avalposts := false
 		for _, channel := range channels {
-			posts, markup := ApiPredict(user.ID, user.Location, channel, user.Time)
+			posts, _ := ApiPredict(user.ID, user.Location, channel, user.Time)
 			for _, post := range posts {
 				if post != "" {
 					avalposts = true
-					SendMessage(chatID,
-						post+"\n"+fmt.Sprintf(`<a href="t.me/%s">%s</a>`, channel, channel))
+					SendMessageWithInlineKeyboard(chatID,
+						post+"\n"+fmt.Sprintf(`<a href="t.me/%s">%s</a>`, channel, channel),
+						channel)
 				}
-			}
-			if markup != "" {
-				data.Posts = append(data.Posts, markup)
-				data.Channels = append(data.Channels, channel)
 			}
 		}
 
 		if !avalposts {
 			SendMessage(user.ID, MessageNoNewPosts)
-		} else {
-			SendMessage(chatID, MessageMarkPlease)
-			SendMessageWithKeyboard(chatID,
-				data.Posts[len(data.Posts)-1]+"\n"+fmt.Sprintf(`<a href="t.me/%s">%s</a>`,
-					data.Channels[len(data.Channels)-1], data.Channels[len(data.Channels)-1]))
-			userstate.Data = &data
-			userstate.Set()
 		}
 	}
+}
+
+func RatePost(chatID int64, messageID int, data string, text string) {
+	defer func() {
+		err := recover()
+		if err != nil {
+			log.Print(err)
+		}
+	}()
+
+	user := User{ID: chatID}
+	user.Get()
+
+	var label []int8
+
+	if data[0] == '1' {
+		label = append(label, 1)
+	} else {
+		label = append(label, 0)
+	}
+
+	ApiTrainChannelSafe(user.ID, user.Location, data[1:], []string{text}, label, true)
+	DisableInlineKeyboard(chatID, messageID)
 }

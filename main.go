@@ -9,7 +9,7 @@ import (
 func main() {
 	config := LoadConfigFromEnv("POSTOWLCONFIG")
 
-	InitBot(config, StateMachine)
+	InitBot(config, StateMachine, RatePost)
 	InitRedis(config)
 	InitDatabase(config)
 	InitApi(config)
