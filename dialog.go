@@ -136,6 +136,8 @@ func StateMachine(chatID int64, text string, username string) {
 		return
 	}
 
+	//log.Println(text)
+
 	user := User{ID: chatID, Channels: "&", Time: -1}
 	if !user.Get() {
 		var min int64 = 9223372036854775807
@@ -227,6 +229,13 @@ func StateMachine(chatID int64, text string, username string) {
 		userstate := UserState{ID: chatID, State: StateIdle, Data: &DialogEmpty{}}
 		userstate.Set()
 		SendMessageRemoveKeyboard(chatID, MessageCancel)
+		return
+	}
+
+	if len(text) > 0 && text[0] == '/' {
+		SendMessage(chatID, MessageUnknownCommand)
+		userstate := UserState{ID: chatID, State: StateIdle, Data: &DialogEmpty{}}
+		userstate.Set()
 		return
 	}
 
