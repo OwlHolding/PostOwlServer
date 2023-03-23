@@ -19,7 +19,7 @@ func InitScheduler(config ServerConfig, handler SchedulerHander) {
 
 func SchedulerTick() {
 	for {
-		SchedulerTickHandler(int16(time.Now().Hour()*60 + time.Now().Minute()))
+		go SchedulerTickHandler(int16(time.Now().Hour()*60 + time.Now().Minute()))
 		time.Sleep(time.Minute)
 	}
 }
