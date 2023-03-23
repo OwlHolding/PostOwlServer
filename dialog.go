@@ -441,7 +441,7 @@ func SendPosts(time int16) {
 			}
 		}
 
-		if !avalposts {
+		if !avalposts && len(channels) > 0 {
 			SendMessage(user.ID, MessageNoNewPosts)
 		}
 	}
