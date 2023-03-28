@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"log"
 
+	"github.com/go-sql-driver/mysql"
 	_ "github.com/go-sql-driver/mysql"
 )
 
@@ -33,19 +34,26 @@ func InitDatabase(config ServerConfig) {
 	DatabaseClient = MySqlClient
 }
 
-func (user *User) Create() {
+func (user *User) Create() bool {
 	_, err := DatabaseClient.Exec(
 		"INSERT postowl.users(id, channels, location, time) VALUES(?, ?, ?, ?)",
 		user.ID, user.Channels, user.Location, user.Time)
+
+	sqlerr, _ := err.(*mysql.MySQLError)
 	if err != nil {
-		log.Fatal(err)
+		if sqlerr.Number == 1062 { // primary key already exists
+			return false
+		} else {
+			panic(err)
+		}
 	}
+	return true
 }
 
 func (user *User) Get() bool {
 	result := DatabaseClient.QueryRow("SELECT * FROM postowl.users WHERE id=?", user.ID)
 	if result.Err() != nil {
-		log.Fatal(result.Err())
+		panic(result.Err())
 	}
 
 	err := result.Scan(&user.ID, &user.Channels, &user.Time, &user.Location)
@@ -53,7 +61,7 @@ func (user *User) Get() bool {
 		if err.Error() == "sql: no rows in result set" {
 			return false
 		} else {
-			log.Fatal(err)
+			panic(err)
 		}
 	}
 	return true
@@ -64,14 +72,14 @@ func (user *User) Update() {
 		"UPDATE postowl.users SET time=?, channels=?, location=? WHERE id=?",
 		user.Time, user.Channels, user.Location, user.ID)
 	if err != nil {
-		log.Fatal(err)
+		panic(err)
 	}
 }
 
 func DatabaseForScheduler(time int16) []int64 {
 	rows, err := DatabaseClient.Query("SELECT id FROM postowl.users WHERE time=?", time)
 	if err != nil {
-		log.Fatal(err)
+		panic(err)
 	}
 	defer rows.Close()
 
@@ -80,7 +88,7 @@ func DatabaseForScheduler(time int16) []int64 {
 	for rows.Next() {
 		err := rows.Scan(&id)
 		if err != nil {
-			log.Println(err)
+			continue
 		}
 
 		ids = append(ids, id)
@@ -93,13 +101,13 @@ func DatabaseCountLocation(location int16) int64 {
 	result := DatabaseClient.QueryRow(
 		"SELECT COUNT(*) FROM postowl.users WHERE location=?", location)
 	if result.Err() != nil {
-		log.Fatal(result.Err())
+		panic(result.Err())
 	}
 
 	var count int64
 	err := result.Scan(&count)
 	if err != nil {
-		log.Fatal(err)
+		panic(err)
 	}
 	return count
 }
