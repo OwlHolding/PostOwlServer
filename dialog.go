@@ -151,9 +151,8 @@ func StateMachine(chatID int64, text string, username string) {
 			iter++
 		}
 		user.Location = minloc
-		user.Create()
 		ApiRegUser(chatID, user.Location)
-		if len(AdminChatIDs) != 0 {
+		if user.Create() && len(AdminChatIDs) != 0 {
 			for _, AdminChatID := range AdminChatIDs {
 				if AdminChatID != 0 {
 					SendMessage(AdminChatID, fmt.Sprintf("New user registered: @%s %d", username, chatID))
