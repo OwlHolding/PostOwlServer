@@ -23,6 +23,7 @@ type ServerConfig struct {
 	AdminChatIDs    []int64
 	BanList         []int64
 	WhiteList       []int64
+	AccessKeys      []string
 }
 
 func GenerateConfig(path string) {

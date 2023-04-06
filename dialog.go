@@ -104,6 +104,7 @@ var ChansPerUser int
 var LocationsCount int16
 var BanList []int64
 var WhiteList []int64
+var AccessKeys []string
 
 func InitStateMachine(config ServerConfig) {
 	AdminChatIDs = config.AdminChatIDs
@@ -111,6 +112,7 @@ func InitStateMachine(config ServerConfig) {
 	LocationsCount = int16(len(config.MlServers))
 	BanList = config.BanList
 	WhiteList = config.WhiteList
+	AccessKeys = config.AccessKeys
 }
 
 func StateMachine(chatID int64, text string, username string) {
@@ -139,6 +141,22 @@ func StateMachine(chatID int64, text string, username string) {
 
 	user := User{ID: chatID, Channels: "&", Time: -1}
 	if !user.Get() {
+		if len(AccessKeys) != 0 {
+			allow := false
+			for _, key := range AccessKeys {
+				if key == text {
+					allow = true
+					break
+				}
+			}
+			if allow {
+				text = "/start"
+			} else {
+				SendMessage(chatID, MessageNotAllowed)
+				return
+			}
+		}
+
 		var min int64 = 9223372036854775807
 		var minloc int16 = 0
 		var iter int16 = 0

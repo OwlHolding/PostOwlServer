@@ -14,5 +14,6 @@
     "MaxSqlIdleConns": 10,
     "AdminChatIDs": 0,
     "BanList": [],
-    "WhiteList": []
+    "WhiteList": [],
+    "AccessKeys" : []
 }
