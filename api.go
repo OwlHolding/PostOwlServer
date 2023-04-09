@@ -139,6 +139,10 @@ func ApiPredict(id int64, location int16, channel string,
 	}
 	defer resp.Body.Close()
 
+	if resp.StatusCode == 400 {
+		return []string{}, ""
+	}
+
 	if resp.StatusCode != 200 {
 		panic(fmt.Errorf("ml server error: %d", resp.StatusCode))
 	}

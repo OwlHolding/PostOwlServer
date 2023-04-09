@@ -447,7 +447,9 @@ func SendPosts(time int16) {
 		avalposts := false
 		for _, channel := range channels {
 			posts, markup := ApiPredict(user.ID, user.Location, channel, user.Time)
-			posts = append(posts, markup)
+			if markup != "" {
+				posts = append(posts, markup)
+			}
 			for _, post := range posts {
 				if post != "" {
 					avalposts = true
