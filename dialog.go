@@ -471,6 +471,14 @@ func RatePost(chatID int64, messageID int, data string, text string) {
 		err := recover()
 		if err != nil {
 			log.Print(err)
+			if len(AdminChatIDs) != 0 {
+				for _, AdminChatID := range AdminChatIDs {
+					if AdminChatID != 0 {
+						SendMessage(AdminChatID,
+							fmt.Sprintf(`Rating error: "%s"`, err))
+					}
+				}
+			}
 		}
 	}()
 
@@ -484,6 +492,8 @@ func RatePost(chatID int64, messageID int, data string, text string) {
 	} else {
 		label = append(label, 0)
 	}
+
+	text = text[:strings.LastIndex(text, "\n")]
 
 	ApiTrainChannelSafe(user.ID, user.Location, data[1:], []string{text}, label, true)
 	DisableInlineKeyboard(chatID, messageID)
